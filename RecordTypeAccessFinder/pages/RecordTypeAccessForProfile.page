@@ -1,0 +1,91 @@
+<apex:page controller="RecordTypeFinderForProfileController"  sidebar="false">
+    <apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-load.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-deflate.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-inflate.js')}"/>  
+    
+    
+    <style>
+    .prog-bar {
+      height: 14px;
+      margin: 3px;
+      padding: 0px;
+      padding-right:3px;
+      background: #FFA037;
+      text-align:right;
+      font-size:12px;
+      font-weight:bold;
+      color:#333333;
+    }
+
+    .prog-bar-done {
+      height: 14px;
+      margin: 3px;
+      padding: 0px;
+      padding-right:3px;
+      background: #C9DDEC;
+    }
+
+    .prog-border {
+      width: 209px;
+      background: #fff;
+      border: 1px solid silver;
+      margin: 0px;
+      padding: 0px;
+    }
+    </style>
+     
+    <apex:form id="form" >
+        <apex:actionPoller action="{!checkAsyncRequest}" interval="5" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/>
+        
+        <apex:sectionHeader title="Profile Retrieve "/>
+        <apex:pageMessages id="messages"/> 
+        <apex:pageBlock title="Search Profile" id="pgblk1">
+        
+            
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton value="Retrieve and generate report"  action="{!retrieveMetadataItem}" rerender="form"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="1">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Select object:" />
+                    <apex:selectList size="1" value="{!selectedObject}" >
+                        <apex:selectOptions value="{!Objectlist}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Select profile:" />
+                    <apex:selectList size="1" value="{!selectedProfile}" >
+                        <apex:selectOptions value="{!profileList}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            
+           <apex:outputPanel rendered="{!NOT(ISNULL(MetaDataRetrieveZip))}">
+                    <apex:actionFunction name="receiveFile" action="{!receiveMetadataZipFile}" rerender="messages,files" oncomplete="unzip();">
+                        <apex:param name="filename" assignTo="{!MetadataFileName}" value=""/>
+                        <apex:param name="filedata" assignTo="{!MetadataFileData}" value=""/>
+                    </apex:actionFunction>  
+                    <apex:actionFunction name="receiveComplete" action="{!receiveComplete}" rerender="form"/>
+                    <c:unzip name="unzip" oncomplete="if(more) receiveFile(path, data); else receiveComplete();">{!MetaDataRetrieveZip}</c:unzip> 
+            </apex:outputPanel>
+            
+       </apex:pageBlock> 
+            
+            
+       <apex:pageblock rendered="{!DisplayReportLink}" title="Report link">
+            <apex:pageblocksection id="files">
+                <apex:pageBlockSectionItem >
+                    <apex:outputlink value="/{!ReportId}?pv0={!selectedObject}" target="_blank"> Click to view report</apex:outputlink> 
+                </apex:pageBlockSectionItem>
+            </apex:pageblocksection>
+       </apex:pageblock>
+         
+         
+       
+        
+       
+       
+    </apex:form>
+</apex:page>
